@@ -1,0 +1,119 @@
+{% load static %}
+
+{% include 'account_module/includes/header_refrence.html' %}
+
+<body dir="rtl">
+  <div class="page-wrapper bg-gra-03 p-t-45 p-b-50">
+    <div class="wrapper wrapper--w790">
+      <div class="card card-5">
+        <div class="card-heading">
+          <h2 class="title">ثبت نام- 1</h2>
+        </div>
+        <div class="card-body">
+          <form method="POST">
+            {% csrf_token %}
+            <div class="form-row m-b-55">
+              <div class="name">نام</div>
+              <div class="value">
+                <br>
+                {{form.first_name.errors}}
+                {{form.last_name.errors}}
+                <div class="row row-space">
+                  <div class="col-2">
+                    <div class="input-group-desc">
+                      {{form.first_name}}
+                    </div>
+                  </div>
+                  <div class="col-2">
+                    <div class="input-group-desc">
+                      {{form.last_name}}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="name">ایمیل</div>
+              <div class="value">
+                <br>
+                {{form.email.errors}}
+                <div class="input-group">
+                  {{form.email}}
+                </div>
+              </div>
+            </div>
+            <div class="form-row m-b-55">
+              <div class="name">تلفن</div>
+              <div class="value">
+                <br>
+                {{form.phone.errors}}
+                <div class="row row-refine">
+                  <div class="col-12">
+                    <div class="input-group-desc">
+                      {{form.phone}}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-row m-b-55">
+              <div class="name">رمزعبور</div>
+              <div class="value">
+                <br>
+                {{form.password.errors}}
+                <div class="row row-refine">
+                  <div class="col-12">
+                    <div class="input-group-desc">
+                      {{form.password}}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-row m-b-55">
+              <div class="name">تکرار رمزعبور</div>
+              <div class="value">
+                <br>
+                {{form.confirm_password.errors}}
+                <div class="row row-refine">
+                  <div class="col-12">
+                    <div class="input-group-desc">
+                      {{form.confirm_password}}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="name">ثبت نام به عنوان </div>
+              <div class="value">
+                {{form.user_type.errors}}
+                <div class="input-group">
+                  <div class="rs-select2 js-select-simple select--no-search">
+                    {{form.user_type}}
+                    <div class="select-dropdown"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn--radius-2 btn--red" type="submit">ثبت نام</button>
+            </div>
+          </form>
+          <br>
+          <hr>
+          <br>
+          <div class="">
+            <p><a class="text-primary" href="{% url 'login' %}">قبلا ثبت نام کردم</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include 'account_module/includes/footer_refrence.html' %}
+
+</body>
+
+
+</html>

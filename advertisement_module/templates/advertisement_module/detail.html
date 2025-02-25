@@ -1,0 +1,50 @@
+{% extends 'advertisement_module/_layout.html' %}
+
+
+{% block page_title %}
+  {{data.title}}
+{% endblock  %}
+  
+
+
+{% block container %}
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h3 class="text-center mb-4">جزئیات آگهی</h3>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>عنوان آگهی:</strong>{{data.title}}</li>
+            <li class="list-group-item"><strong>شغل :</strong>{{data.job}}</li>
+            <li class="list-group-item"><strong>توضیحات:</strong>{{data.description_position}}</li>
+            <li class="list-group-item"><strong>جنسیت:</strong>{{data.get_gender_display}}</li>
+            <li class="list-group-item"><strong>وضعیت سربازی:</strong>{{data.soldier_status}}</li>
+            <li class="list-group-item"><strong>حداقل مدرک تحصیلی:</strong>{{data.get_degree_display}}</li>
+            <li class="list-group-item"><strong>سابقه کار مرتبط:</strong>{{data.get_type_of_cooperation_display}}</li>
+            <li class="list-group-item"><strong>حداقل دستمزد:</strong>{{data.salary}}</li>
+            <li class="list-group-item"><strong>استان:</strong>{{province}}</li>
+            <li class="list-group-item"><strong>شهر:</strong>{{county}}</li>
+            
+            {% if district %}
+            <li class="list-group-item"><strong>منطقه:</strong>{{district}}</li>
+            {% endif %}
+                
+
+            <li class="list-group-item"><strong>نوع اشتراک :</strong>{{data.subscription}}</li>
+            <li class="list-group-item"><strong>زمان نمایش آگهی:</strong>{{data.duration}}</li>
+            <li class="list-group-item"><strong>تاریخ انقضا آگهی:</strong>{{data.expire_date}}</li>
+            <li class="list-group-item"><strong>مهارت های مورد نیاز:</strong>
+            
+            {% for skill in data.skills.all %}
+                {{skill}} - 
+            {% endfor %}
+                
+            </li>
+
+            
+            <li class="list-group-item"><strong>میزان حقوق:</strong> ۱۰ میلیون تومان</li>
+            <li class="list-group-item"><strong>وضعیت:</strong> <span class="">{{data.get_status_display}}</span></li>
+        </ul>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary mt-3 d-block">بازگشت</a>
+    </div>
+</div>
+
+{% endblock %}
