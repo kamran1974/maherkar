@@ -62,7 +62,7 @@ class RegisterView(View):
                 new_user.new_verify_code()
                 new_user.save()
                 # send_email('email/active_account.html',new_user.email,{"verify_code" :new_user.verify_code},"فعالسازی حساب")
-                send_sms(new_user.phone,new_user.verfiy_code,"verifyaccount")
+                send_sms(new_user.phone,new_user.verify_code,"verifyaccount")
                 request.session['phone'] = new_user.phone
                 return redirect('active_account')
                 
