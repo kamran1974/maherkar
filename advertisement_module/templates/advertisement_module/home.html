@@ -1,0 +1,45 @@
+{% extends 'advertisement_module/_layout.html' %}
+
+
+{% block page_title %}
+  خانه
+{% endblock  %}
+  
+
+
+{% block container %}
+    <!-- محتوای اصلی صفحه -->
+    <div class="container mt-5">
+      <div class="bg-white p-5 rounded shadow">
+        <h1 class="display-4 text-center">
+          به پلتفرم آگهی شغلی خوش آمدید، 
+          <span id="userNamePlaceholder">{{name}}</span>
+        </h1>
+        <p class="lead text-center">
+          در اینجا می‌توانید به راحتی آگهی‌های شغلی خود را ایجاد، مدیریت و مشاهده کنید.
+        </p>
+        <hr class="my-4">
+        {% if status %}
+        <p class="text-center">
+          برای شروع، یکی از گزینه‌های موجود در منوی بالا را انتخاب کنید.
+        </p>
+        
+
+        <div class="d-flex justify-content-center">
+          
+          <a href="{% url 'create_advetisement' %}" class="btn btn-primary btn-lg me-2">افزودن آگهی</a>
+          <a href="{% url 'advertisement_manage' %}" class="btn btn-secondary btn-lg">مدیریت آگهی‌ها</a>
+        </div>
+        {% else %}
+        <div class="text-center alert alert-danger">
+          <p>اطلاعات شما توسط کارشناسان در حال تایید است پس از تایید شما می‌توانید آگهی ایجاد کنید.</p>
+        </div>
+        {% endif %}
+          
+        
+      </div>
+    </div>
+{% endblock  %}
+  
+
+

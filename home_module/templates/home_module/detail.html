@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+  جزئیات آگهی
+    </title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light" dir="rtl">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+      <a class="navbar-brand" href="">آگهی</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+              aria-controls="navbarNav" aria-expanded="false" aria-label="">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" href="{% url 'home' %}">خانه</a>
+          </li>
+          
+          {% if  request.user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">خروج از حساب</a>
+          </li>
+          {% endif %}
+            
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h3 class="text-center mb-4">جزئیات آگهی</h3>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>عنوان آگهی:</strong>{{data.title}}</li>
+            <li class="list-group-item"><strong>شغل :</strong>{{data.job}}</li>
+            <li class="list-group-item"><strong>توضیحات:</strong>{{data.description_position}}</li>
+            <li class="list-group-item"><strong>جنسیت:</strong>{{data.get_gender_display}}</li>
+            <li class="list-group-item"><strong>وضعیت سربازی:</strong>{{data.get_soldier_status_display}}</li>
+            <li class="list-group-item"><strong>حداقل مدرک تحصیلی:</strong>{{data.degree}}</li>
+            <li class="list-group-item"><strong>سابقه کار مرتبط:</strong>{{ data.type_of_cooperation }}</li>
+            <li class="list-group-item"><strong>حداقل دستمزد:</strong>{{data.salary}}</li>
+            <li class="list-group-item"><strong>استان:</strong>{{data.province}}</li>
+            <li class="list-group-item"><strong>شهر:</strong>{{data.county}}</li>
+            <li class="list-group-item"><strong>مهارت های مورد نیاز:</strong>
+            
+            {% for skill in data.skills.all %}
+                {{skill}} - 
+            {% endfor %}
+                
+            </li>
+
+            
+            <li class="list-group-item"><strong>میزان حقوق:</strong> ۱۰ میلیون تومان</li>
+            <hr>
+            
+            
+            {% if request.user.is_authenticated%}
+            <li>اطلاعات شرکت :</li>
+            <li>نام شرکت : {{employer.persian_compnay_name}}</li>
+            <li>{{employer.description}}</li>
+            <li>حوزه فعالیت : {{employer.company_filed}}</li>
+
+            <hr>
+            <li>اطلاعات تماس :</li>
+            <li>شماره تلفن : {{employer.user.phone}}</li>
+            {% else %}
+            <p class="text-center alert alert-danger">برای مشاهده اطلاعات تماس <a href="{% url 'login' %}">وارد</a> شوید</p>
+            {% endif %}
+                
+            
+        </ul>
+
+{% if request.user.is_authenticated %}
+<a href="{% url 'report' data.advertise_code %}" class="btn btn-warning mt-3 d-block">گزارش</a>
+
+{% endif %}
+  
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary mt-3 d-block">بازگشت</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  
+</body>
+</html>

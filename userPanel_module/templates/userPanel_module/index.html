@@ -1,0 +1,25 @@
+{% extends 'userPanel_module/_layout.html' %}
+
+
+{% block page_title %}
+  خانه
+{% endblock  %}
+  
+
+
+{% block container %}
+    <!-- محتوای اصلی صفحه -->
+    <div class="container mt-5">
+      <div class="bg-white p-5 rounded shadow">
+        <h1 class="display-4 text-center">
+          به پلتفرم آگهی شغلی خوش آمدید، 
+          <span id="userNamePlaceholder">{{user.first_name}}</span>
+        </h1>
+
+
+      </div>
+    </div>
+{% endblock  %}
+  
+
+
