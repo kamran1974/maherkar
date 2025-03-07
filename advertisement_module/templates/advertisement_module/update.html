@@ -1,0 +1,61 @@
+{% extends 'advertisement_module/_layout.html' %}
+
+{% block page_title %}
+    ویرایش آگهی
+{% endblock  %}
+
+
+{% block container %}
+
+<div class="container mt-5">
+    <div class="card shadow p-4">
+      <div notif>
+        <div class="alert alert-warning">بعد از انجام هر تغییری فرآیند بررسی توسط ادمین ها از اول آغاز می شود</div>
+        <div class="alert alert-warning">همچنین بعد از ویرایش مدت زمان نمایش آگهی و نوع اشتراک وضعیت پرداخت آگهی شما تغییر میکند</div>
+      </div>
+        <h3 class="text-center mb-4">ویرایش آگهی </h3>
+        <form method="post">
+          {% csrf_token %}
+            {{form.as_p}}
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">ویرایش آگهی</button>
+            </div>
+        </form>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary mt-3 d-block">بازگشت</a>
+    </div>
+</div>
+{% endblock  %}
+
+
+{% block script %}
+<script>
+    let province_value =document.getElementById('id_province').addEventListener('change',filter_city)
+    function filter_city(){
+  let province_value =document.getElementById('id_province').value;
+  let city_select = document.getElementById('id_county');
+  $.ajax(
+           {
+              type: "GET",
+              url: "/get-cities",
+              data: {
+                 province_id: province_value
+              },
+              success: function (data) {
+                //  $('#replay').text(data);
+                city_select.innerHTML="<option value=''>انتخاب شهر</option>";
+  
+                data.cities.forEach(city => {
+                  let option =document.createElement('option');
+                  option.value = city.id;
+                  option.textContent = city.name;
+                  city_select.appendChild(option);
+                });
+              }
+           })
+  }
+  </script>
+  
+{% endblock  %}
+    
+    
+    

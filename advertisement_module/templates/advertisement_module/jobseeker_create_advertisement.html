@@ -1,0 +1,46 @@
+{% extends 'advertisement_module/_jobseeker_layout.html' %}
+
+{% block page_title %}
+    افزودن آگهی تقاضای کار
+{% endblock  %}
+
+
+{% block container %}
+
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h3 class="text-center mb-4">افزودن آگهی تقاضای کار</h3>
+        <form method="post">
+          {% csrf_token %}
+            {{form.as_p}}
+            <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-primary">ثبت آگهی</button>
+                <button type="submit" class="btn btn-secondary">ذخیره به عنوان پیش‌نویس</button>
+            </div>
+        </form>
+        <a href="{% url 'jobseeker_manage' %}" class="btn btn-outline-secondary mt-3 d-block">بازگشت</a>
+    </div>
+</div>
+{% endblock  %}
+
+
+{% block script %}
+<script>
+  function check_gender(gender){
+    select =document.getElementById('id_soldier_status');
+    if (gender == "زن"){
+      document.getElementById('id_soldier_status').hidden = true;
+      select.value = null;
+    }
+    else{
+      document.getElementById('id_soldier_status').hidden = false;
+      select.value = null;
+
+    }
+  }
+</script>
+  
+{% endblock  %}
+    
+    
+    

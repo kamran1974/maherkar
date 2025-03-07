@@ -1,0 +1,69 @@
+{% load static %}
+
+{% include 'account_module/includes/header_refrence.html' %}
+<body dir="rtl">
+<div class="page-wrapper bg-gra-03 p-t-45 p-b-50">
+  <div class="wrapper wrapper--w790">
+    <div class="card card-5">
+      <div class="card-heading">
+        <h2 class="title">ثبت نام کارجو- 2</h2>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          {% csrf_token %}
+        {{form}}
+          <div>
+            <button class="btn btn--radius-2 btn--red" type="submit">ثبت نام</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include 'account_module/includes/footer_refrence.html' %}
+
+<script>
+  let province_value =document.getElementById('id_province').addEventListener('change',filter_city)
+  function filter_city(){
+let province_value =document.getElementById('id_province').value;
+let city_select = document.getElementById('id_county');
+$.ajax(
+         {
+            type: "GET",
+            url: "/get-cities",
+            data: {
+               province_id: province_value
+            },
+            success: function (data) {
+              //  $('#replay').text(data);
+              city_select.innerHTML="<option value=''>انتخاب شهر</option>";
+
+              data.cities.forEach(city => {
+                let option =document.createElement('option');
+                option.value = city.id;
+                option.textContent = city.name;
+                city_select.appendChild(option);
+              });
+            }
+         })
+}
+</script>
+
+<script>
+  function Check_county(id){
+    if (id == 126){
+      document.getElementById('id_district').disabled = false;
+      // document.getElementById('id_district').hidden = false;
+    }else{
+      
+      document.getElementById('id_district').disabled = true;
+      document.getElementById('id_district').value = '';
+      // document.getElementById('id_district').hidden = true;
+    }
+  }
+</script>
+</body>
+
+
+</html>

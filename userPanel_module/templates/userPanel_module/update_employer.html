@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+</head>
+<body>
+<p>بعد از انجام ویرایش اطلاعات ، اطلاعات شما توسط کارشناسان دوباره بررسی میشود</p>
+<div class="errors">
+    <ul>
+      {% for form.errors in error %}
+<li class="alert alert-danger">{{error}}</li>
+      {% endfor %}
+    </ul>
+    
+  </div>
+    <form  method="post">
+        {% csrf_token %}
+        {{form.as_p}}
+        <button type="submit" >save</button>
+    </form>
+
+    <a class="btn btn-link" href="{% url 'user_dashboard' %}">بازگشت</a>
+    
+
+    <script>
+        let province_value =document.getElementById('id_province').addEventListener('change',filter_city)
+        function filter_city(){
+      let province_value =document.getElementById('id_province').value;
+      let city_select = document.getElementById('id_county');
+      $.ajax(
+               {
+                  type: "GET",
+                  url: "/get-cities",
+                  data: {
+                     province_id: province_value
+                  },
+                  success: function (data) {
+                    //  $('#replay').text(data);
+                    city_select.innerHTML="<option value=''>انتخاب شهر</option>";
+      
+                    data.cities.forEach(city => {
+                      let option =document.createElement('option');
+                      option.value = city.id;
+                      option.textContent = city.name;
+                      city_select.appendChild(option);
+                    });
+                  }
+               })
+      }
+      </script>
+      
+      <script>
+        function Check_county(id){
+        debugger;
+          if (id == 126){
+            document.getElementById('id_district').disabled = false;
+            // document.getElementById('id_district').hidden = false;
+          }else{
+            
+            document.getElementById('id_district').disabled = true;
+            document.getElementById('id_district').value = '';
+            // document.getElementById('id_district').hidden = true;
+          }
+        }
+      </script>
+      
+
+</body>
+</html>

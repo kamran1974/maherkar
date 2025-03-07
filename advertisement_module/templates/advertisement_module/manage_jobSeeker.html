@@ -1,0 +1,157 @@
+{% extends 'advertisement_module/_jobseeker_layout.html' %}
+
+
+{% block page_title %}
+خانه
+{% endblock %}
+
+
+advertise
+
+{% block container %}
+
+
+
+
+
+
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h3 class="text-center mb-4">مدیریت آگهی‌ها</h3>
+        {% if data %}
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>عنوان</th>
+                    <th>وضعیت</th>
+                    <th class="text-center">عملیات</th>
+                </tr>
+            </thead>
+            
+            <tbody>
+
+
+
+
+
+
+
+
+
+                {% if data.pay_status == 1 and data.status == "approved" %}
+
+                <tr>
+                    <td>آگهی متقاضی کار</td>
+                    <td><span class="badge bg-success">{{data.get_status_display}}</span></td>
+                    <td class="text-center">
+                        <a href="{% url 'jobseeker_detail_advetisement' data.advertise_code %}"
+                            class="btn btn-info btn-sm">جزئیات</a>
+                        <a href="{% url 'jobseeker_update_advetisement' data.advertise_code %}"
+                            class="btn btn-warning btn-sm">ویرایش</a>
+                        <a href="{% url 'jobseeker_delete_advetisement' data.advertise_code %}"
+                            class="btn btn-danger btn-sm">حذف</a>
+                    </td>
+                </tr>
+                {% endif %}
+
+            </tbody>
+        </table>
+        <h4 class="mt-4">آگهی‌های پیش‌نویس</h4>
+        <table class="table table-warning table-hover">
+            <thead>
+                <tr>
+                    <th>عنوان</th>
+                    <th>وضعیت</th>
+                    <th class="text-center">عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+
+
+
+                {% if data.status != "approved" %}
+
+                <tr>
+                    <td>آگهی متقاضی کار</td>
+                    <td><span class="badge bg-secondary">پیش‌نویس ({{ data.get_status_display }})</span></td>
+                    <td class="text-center">
+
+                        {% if data.status == "unpaid" %}
+                        <button class="btn btn-success btn-sm">پرداخت و انتشار</button>
+
+                        {% endif %}
+                        <a href="{% url 'jobseeker_detail_advetisement' data.advertise_code %}"
+                            class="btn btn-info btn-sm">جزئیات</a>
+                        <a href="{% url 'jobseeker_update_advetisement' data.advertise_code %}"
+                            class="btn btn-warning btn-sm">ویرایش</a>
+                        <a href="{% url 'jobseeker_delete_advetisement' data.advertise_code %}"
+                            class="btn btn-danger btn-sm">حذف</a>
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-center">آگهی وجود ندارد <a href="{% url 'jobseeker_create_advetisement' %}">ایجاد </a> کنید</p>
+        {% endif %}
+
+        <hr>
+        <br>
+        <p class="text-center">سوابق</p>
+        <p class="text-warning text-center">شما نمیتوانید بیشتر از 5 سابقه کار برای خود ثبت کنید</p>
+
+        {% if jobs %}
+        <div class="container">
+
+            <table class="table table-striped table-dark">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">مکان</th>
+                        <th scope="col">شغل</th>
+                        <th scope="col">مدت (براساس ماه)</th>
+                        <th scope="col">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in jobs %}
+                    <tr>
+                        <th scope="row">{{forloop.counter}}</th>
+
+
+                        <td>{{job.place}}</td>
+                        <td>{{job.job}}</td>
+                        <td>{{job.duration}}</td>
+                        <td>
+                            <a class="btn btn-warning" href="{% url 'update_history' job.pk %}">ویرایش</a>
+                            <a class="btn btn-danger" href="{% url 'delete_history' job.pk %}">حذف</a>
+                            <a class="btn btn-info" href="{% url 'jobseeker_manage' %}">بازگشت</a>
+                        </td>
+
+
+
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center text text-danger">
+            سابقه ای وجود ندارد درصورت تمایل <a href="{% url 'create_history' %}">ایجاد</a> کنید.
+        </p>
+
+        {% endif %}
+
+        <a href="{% url 'jobseeker_manage' %}" class="btn btn-outline-secondary mt-3 d-block">بازگشت</a>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+{% endblock %}

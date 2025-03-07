@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>فعالسازی حساب</title>
+   
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+    <script>
+        function startCountdown() {
+            // let timeLeft = 120;
+            let timerElement = document.getElementById("timer");
+            let resendButton = document.getElementById("resend");
+            resendButton.style.display = "none";
+
+            let endTime = localStorage.getItem('endTime');
+            let now = new Date().getTime();
+
+            if(!endTime){
+                localStorage.setItem('endTime',now+120*1000);
+                endTime = now +120 *1000;
+            }else{
+                endTime = parseInt(endTime);
+            }
+
+            let timeLeft = Math.floor((endTime - now)/1000)
+
+            if (timeLeft <= 0 ){
+                timerElement.textContent = "زمان تمام شد";
+                    resendButton.style.display = "block";
+                    return;
+            }
+
+            let countdown = setInterval(function () {
+                now = new Date().getTime();
+                let timeLeft = Math.floor((endTime - now ) / 1000);
+
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    timerElement.textContent = "زمان تمام شد";
+                    resendButton.style.display = "block";
+                    localStorage.removeItem("endTime");
+                }else{
+                    let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                timerElement.textContent = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            startCountdown();
+        });
+
+        function resendCode(phone) {
+            startCountdown();
+            $.ajax(
+                {
+                    type: "GET",
+                    url: "{% url 'reSend' %}",
+                    data: {
+                        phone: phone
+                    },
+                    success: function (data) {
+                        resendButton.style.display = "none";
+                        newEndTime = new Date().getTime() + 120 * 1000;
+                        localStorage.setItem('endTime',newEndTime);
+                        location.reload();
+
+                    }
+                })
+        }
+
+
+    </script>
+</head>
+
+<body class="d-flex align-items-center justify-content-center vh-100 bg-light">
+    <div class="card p-4 text-center shadow-sm">
+        <h3>فعالسازی حساب</h3>
+        <p>کد فعال‌سازی به شماره شما ارسال شده است.</p>
+        <p>لطفاً تا <span id="timer" class="fw-bold">2:00</span> صبر کنید.</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="activationCode" class="form-label">کد ۶ رقمی را وارد کنید</label>
+                {{form}}
+            </div>
+            <button type="submit" class="btn btn-success">تایید</button>
+        </form>
+        <button id="resend" class="btn btn-primary mt-3" onclick="resendCode('{{phone}}');">ارسال مجدد کد</button>
+    </div>
+</body>
+
+</html>

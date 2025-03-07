@@ -1,0 +1,42 @@
+{% load static %}
+
+{% include 'account_module/includes/header_refrence.html' %}
+
+<body dir="rtl">
+    <div class="page-wrapper bg-gra-03 p-t-45 p-b-50">
+        <div class="wrapper wrapper--w790">
+            <div class="card card-5">
+                <div class="card-heading">
+                    <h2 class="title">ورود</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{form}}
+                        <div>
+                            <button class="btn btn--radius-2 btn--red" type="submit">ورود</button>
+                        </div>
+                    </form>
+                    <br>
+                    <hr>
+                    <br>
+                    <ul>
+                        <li class="col-md-6">
+                            <p><a class="text-primary" href="{% url 'forgot_password' %}">فراموشی رمز عبور</a></p>
+                        </li>
+                        <li class="col-md-6">
+                            <p><a class="text-primary" href="{% url 'register' %}">ثبت نام نکردم</a></p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    {% include 'account_module/includes/footer_refrence.html' %}
+
+</body>
+
+
+</html>

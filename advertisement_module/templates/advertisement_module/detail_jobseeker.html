@@ -1,0 +1,62 @@
+{% extends 'advertisement_module/_jobseeker_layout.html' %}
+
+
+{% block page_title %}
+  {{data.title}}
+{% endblock  %}
+  
+
+
+{% block container %}
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h3 class="text-center mb-4">جزئیات آگهی</h3>
+        <ul class="list-group list-group-flush">
+
+            <li class="list-group-item"><strong>شغل مورد تقاضا :</strong>{{data.job_type}}</li>
+            <li class="list-group-item"><strong>جنسیت:</strong>{{data.get_gender_display}}</li>
+            <li class="list-group-item"><strong>وضعیت تاهل:</strong>{{data.married_status}}</li>
+            <li class="list-group-item"><strong>تعداد فرزند:</strong>{{data.children_number}}</li>
+            <li class="list-group-item"><strong>وضعیت سربازی:</strong>{{data.soldier_status}}</li>
+            <li class="list-group-item"><strong>رشته تحصیلی :</strong>{{data.field_study}}</li>
+            <li class="list-group-item"><strong>حداقل مدرک تحصیلی:</strong>{{data.get_degree_display}}</li>
+            <li class="list-group-item"><strong>سابقه بیمه:</strong>{{data.get_insurance_display}}</li>
+            <li class="list-group-item"><strong>دستمزد پیشنهادی:</strong>{{data.salary}}</li>
+            <li class="list-group-item"><strong>سابقه آسیب شغلی :</strong>{{data.history_injury}}</li>
+            <li class="list-group-item"><strong>استان:</strong>{{province}}</li>
+            <li class="list-group-item"><strong>شهر:</strong>{{county}}</li>
+            {% if district %}
+            <li class="list-group-item"><strong>منطقه:</strong>{{district}}</li>
+            {% endif %}
+            
+            {% if data.description %}
+            <li class="list-group-item"><strong>توضیحات تکمیلی:</strong>{{data.description}}</li>
+
+            {% endif %}
+            <li class="list-group-item"><strong>آدرس :</strong>{{data.address}}</li>
+                
+            
+            
+                
+
+            <li class="list-group-item"><strong>نوع اشتراک :</strong>{{data.subscription}}</li>
+            <li class="list-group-item"><strong>زمان نمایش آگهی:</strong>{{data.duration}}</li>
+            <li class="list-group-item"><strong>تاریخ انقضا آگهی:</strong>{{data.expire_date}}</li>
+            <li class="list-group-item"><strong>مهارت های مرتبط با حوزه فعالیت:</strong>
+            
+            {% for skill in data.skills.all %}
+                {{skill}} - 
+            {% endfor %}
+                
+            </li>
+
+            
+            <li class="list-group-item"><strong>وضعیت:</strong> <span class="">{{data.get_status_display}}</span></li>
+        </ul>
+        <a href="{% url 'jobseeker_manage' %}" class="btn btn-outline-secondary mt-3 d-block">بازگشت</a>
+    </div>
+</div>
+
+
+
+{% endblock %}

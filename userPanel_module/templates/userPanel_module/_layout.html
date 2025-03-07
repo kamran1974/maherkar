@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    {% block page_title %}
+
+    {% endblock %}
+  </title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light" dir="rtl">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+      <a class="navbar-brand" href="{% url 'home' %}">ماهرکار</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" href="{% url 'user_dashboard' %}">خانه</a>
+          </li>
+          <li class="nav-item"> <a class="nav-link" href="{% url 'update_user' %}">ویرایش اطلاعات شخصی</a>
+          {% if user.user_type == 'employer' %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'dashboard' %}">مدیریت آگهی‌ها</a>
+          </li>
+          {% endif %}
+          
+          {% if user.user_type == "jobseeker" %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'jobseeker_manage' %}">مدیریت آگهی‌</a>
+          </li>
+          {% endif %}
+            
+          <li class="nav-item"> <a class="nav-link" href="
+          {% if request.user.user_type == 'employer' %}
+            {% url 'update_employer' %}
+            {% else %}
+            {% url 'update_jobseeker' %}
+          {% endif %}
+            ">ویرایش اطلاعات کاربری</a>
+          </li>
+
+
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">خروج از حساب</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  {% block container %}
+
+  {% endblock %}
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static " login_register/vendor/jquery/jquery.min.js" %}"></script>
+  <script>
+    function Check_county(id) {
+      if (id == 126) {
+        document.getElementById('id_district').disabled = false;
+        // document.getElementById('id_district').hidden = false;
+      } else {
+
+        document.getElementById('id_district').disabled = true;
+        document.getElementById('id_district').value = '';
+        // document.getElementById('id_district').hidden = true;
+      }
+    }
+  </script>
+  {% block script %}
+
+  {% endblock %}
+
+</body>
+
+</html>

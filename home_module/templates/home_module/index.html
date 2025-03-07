@@ -1,0 +1,264 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ماهرکار - فرصت‌های شغلی</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css">
+  <style>
+    body {
+      font-family: 'Vazir', sans-serif;
+      background-color: #f8f9fa;
+    }
+
+    h2,
+    h4,
+    strong {
+      color: #343a40;
+    }
+
+    .card {
+      border: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    .card p {
+      font-size: 1rem;
+      color: #555;
+    }
+
+    .btn-success {
+      background-color: #28a745;
+      border-color: #28a745;
+      font-weight: bold;
+    }
+
+    .btn-success:hover {
+      background-color: #218838;
+      border-color: #1e7e34;
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+  <!-- نوار ناوبری -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+      <a class="navbar-brand" href="#">ماهرکار</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+
+          {% if request.user.is_authenticated %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">خروج</a></li>
+
+          <li class="nav-item"><a class="nav-link" href="{% url 'user_dashboard' %}">داشبورد</a></li>
+          {% else %}
+
+          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">ورود</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">ثبت‌نام</a></li>
+
+          {% endif %}
+
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- جستجوی شغل -->
+  <div class="container my-4">
+    <h2 class="text-center">جستجوی فرصت‌های شغلی</h2>
+    <form method="post">
+      {% csrf_token %}
+      <div class="row g-3">
+        <!-- انتخاب استان -->
+        <div class="col-md-3">
+          <label for="province" class="form-label">استان</label>
+          {{form.province}}
+        </div>
+
+        <!-- انتخاب شهر -->
+        <div class="col-md-3">
+          <label for="city" class="form-label">شهر</label>
+          {{form.county}}
+        </div>
+
+        <div class="col-md-3 ">
+          <label for="city" class="form-label">منطقه</label>
+          {{form.district}}
+        </div>
+
+        <!-- انتخاب نوع شغل -->
+        <div class="col-md-3">
+          <label for="jobType" class="form-label">نوع شغل</label>
+          {{form.job_type}}
+        </div>
+      </div>
+
+      <div class="row my-3">
+        <div class="col-md-8 mx-auto">
+          {{form.search}}
+        </div>
+      </div>
+
+
+
+      <div class="text-center">
+        <button type="submit" class="btn btn-primary">جستجو</button>
+        <a href="{% url 'home' %}" class="btn btn-warning">بازنشانی</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- لیست فرصت‌های شغلی -->
+  <div class="container">
+    <div class="row">
+
+      {% if advertisments %}
+
+      {% for data in advertisments %}
+      <div class="col-md-6">
+        <div class="card mb-3">
+          <div class="card-body">
+
+            {% if data.subscription.name == "فوری" %}
+            <p class="text-danger">{{data.subscription.name}}</p>
+            {% endif %}
+            {% if data.subscription.name == "ویژه" %}
+            <p class="text-warning">{{data.subscription.name}}</p>
+            {% endif %}
+            {% if data.subscription.name == "نردبان" %}
+            <p class="text-info">{{data.subscription.name}}</p>
+            {% endif %}
+
+
+
+
+            <h5 class="card-title">
+
+
+              {% if request.user.user_type != "employer" %}
+              {{data.title}} -
+              {% endif %}
+
+
+              {{data.job}}</h5>
+            <p class="card-text">
+
+
+              {% if request.user.user_type != "employer" %}
+              {{data.employer.persian_compnay_name}} |
+              {% endif %}
+
+
+              {{data.county}}</p>
+            <a href="{% url 'detail_advetisement_home' data.advertise_code %}" class="btn btn-primary">مشاهده جزئیات</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+      <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+
+          {% if advertisments.has_previous %}
+          <li class="page-item">
+            <a href="?page={{ advertisments.previous_page_number }}" class="page-link">Previous</a>
+          </li>
+          {% endif %}
+
+
+
+          {% for p in advertisments.paginator.page_range %}
+          <li class="page-item {% if advertisments.number == p %}active{% endif %}">
+            <a class="page-link" href="?page={{ p }}">{{p}}</a>
+          </li>
+
+          {% endfor %}
+
+          {% if advertisments.has_next %}
+          <li class="page-item">
+            <a href="?page={{ advertisments.next_page_number }}" class="page-link" href="#">Next</a>
+          </li>
+          {% endif %}
+
+
+        </ul>
+      </nav>
+
+
+      {% else %}
+      <div class="text-center alert alert-info">
+        <p>آگهی پیدا نشد</p>
+      </div>
+      {% endif %}
+
+
+    </div>
+  </div>
+
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static " login_register/vendor/jquery/jquery.min.js" %}"></script>
+
+  <script>
+    let province_value = document.getElementById('id_province').addEventListener('change', filter_city)
+    function filter_city() {
+      let province_value = document.getElementById('id_province').value;
+      let city_select = document.getElementById('id_county');
+      $.ajax(
+        {
+          type: "GET",
+          url: "/get-cities",
+          data: {
+            province_id: province_value
+          },
+          success: function (data) {
+            //  $('#replay').text(data);
+            city_select.innerHTML = "<option value=''>انتخاب شهر</option>";
+
+            data.cities.forEach(city => {
+              let option = document.createElement('option');
+              option.value = city.id;
+              option.textContent = city.name;
+              city_select.appendChild(option);
+            });
+          }
+        })
+    }
+
+  </script>
+
+
+  <script>
+    function Check_county(id) {
+      if (id == 126) {
+        document.getElementById('id_district').disabled = false;
+        document.getElementById('id_district').hidden = false;
+      } else {
+
+        document.getElementById('id_district').disabled = true;
+        document.getElementById('id_district').value = '';
+        document.getElementById('id_district').hidden = true;
+      }
+    }
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,93 @@
+
+{% extends 'advertisement_module/_layout.html' %}
+
+
+{% block page_title %}
+  خانه
+{% endblock  %}
+  
+
+
+{% block container %}
+
+
+
+
+
+
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h3 class="text-center mb-4">مدیریت آگهی‌ها</h3>
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>عنوان</th>
+                    <th>وضعیت</th>
+                    <th class="text-center">عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                
+                {% if advertisements %}
+                    
+                
+                    
+
+                {% for data in advertisements %}
+                  
+                  {% if data.pay_status == 1 and data.status == "approved" %}
+                          
+                <tr>
+                    <td>{{data.title}}</td>
+                    <td><span class="badge bg-success">{{data.get_status_display}}</span></td>
+                    <td class="text-center">
+                        <a href="{% url 'detail_advetisement' data.advertise_code %}" class="btn btn-info btn-sm">جزئیات</a>
+                        <a href="{% url 'update_advetisement' data.advertise_code %}" class="btn btn-warning btn-sm">ویرایش</a>
+                        <a href="{% url 'delete_advetisement' data.advertise_code %}" class="btn btn-danger btn-sm">حذف</a>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+        <h4 class="mt-4">آگهی‌های پیش‌نویس</h4>
+        <table class="table table-warning table-hover">
+            <thead>
+                <tr>
+                    <th>عنوان</th>
+                    <th>وضعیت</th>
+                    <th class="text-center">عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                {% for data in advertisements %}
+                    
+                    {% if data.status != "approved" %}                  
+                        
+                <tr>
+                    <td>{{data.title}}</td>
+                    <td><span class="badge bg-secondary">پیش‌نویس ({{ data.get_status_display }})</span></td>
+                    <td class="text-center">
+                        
+                        {% if data.status == "unpaid" %}
+                        <button class="btn btn-success btn-sm">پرداخت و انتشار</button>
+
+                        {% endif %}
+                        <a href="{% url 'detail_advetisement' data.advertise_code %}" class="btn btn-info btn-sm">جزئیات</a>
+                        <a href="{% url 'update_advetisement' data.advertise_code %}" class="btn btn-warning btn-sm">ویرایش</a>
+                        <a href="{% url 'delete_advetisement' data.advertise_code %}" class="btn btn-danger btn-sm">حذف</a>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary mt-3 d-block">بازگشت</a>
+    </div>
+</div>
+
+
+{% endblock %}

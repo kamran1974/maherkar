@@ -1,0 +1,53 @@
+{% extends 'advertisement_module/_jobseeker_layout.html' %}
+
+{% block page_title %}
+    ویرایش آگهی
+{% endblock  %}
+
+
+{% block container %}
+
+<div class="container mt-5">
+    <div class="card shadow p-4">
+      <div notif>
+        <div class="alert alert-warning">بعد از انجام هر تغییری فرآیند بررسی توسط ادمین ها از اول آغاز می شود</div>
+        <div class="alert alert-warning">همچنین بعد از ویرایش مدت زمان نمایش آگهی و نوع اشتراک وضعیت پرداخت آگهی شما تغییر میکند</div>
+      </div>
+        <h3 class="text-center mb-4">ویرایش آگهی </h3>
+        <form method="post">
+          {% csrf_token %}
+            {{form.as_p}}
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">ویرایش آگهی</button>
+            </div>
+        </form>
+        <a href="{% url 'jobseeker_manage' %}" class="btn btn-outline-secondary mt-3 d-block">بازگشت</a>
+    </div>
+</div>
+{% endblock  %}
+
+
+{% block script %}
+
+
+<script>
+    function check_gender(gender){
+        debugger
+  
+      select =document.getElementById('id_soldier_status');
+      if (gender.value == "زن"){
+        document.getElementById('id_soldier_status').hidden = true;
+        select.value = null;
+      }
+      else{
+        document.getElementById('id_soldier_status').hidden = false;
+        select.value = null;
+  
+      }
+    }
+  </script>
+  
+{% endblock  %}
+    
+    
+    
