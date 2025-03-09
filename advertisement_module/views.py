@@ -1,446 +1,435 @@
-from django.http import (Http404, HttpRequest, HttpResponse,
-                         HttpResponseNotFound, JsonResponse)
+# ایمپورت‌های مورد نیاز
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from iranian_cities.models import County
 from rest_framework.viewsets import ModelViewSet
+from iranian_cities.models import County
 
 from account_module.models import Employer
-from advertisement_module.models import (Advertisment, AdvertismentJobSeeker,
-                                         Duration, JobHistory, Skill,
-                                         Subscription)
-from advertisement_module.serializers import (AdvertisementModelSerializer,
-                                              DurationModelSerializer,
-                                              SkillModelSerializer,
-                                              SubscriptionModelSerializer,JobHistoryModelSerializer,AdvertisementJobSeekerModelSerializer)
+from advertisement_module.models import (
+    Advertisement,
+    AdvertisementJobSeeker,
+    AdDisplayDuration,
+    JobHistory,
+    ReportAdvertisment,
+    Subscription,
+    Skill
+)
+from advertisement_module.serializers import (
+    AdvertisementModelSerializer,
+    AdvertisementJobSeekerModelSerializer,
+    AdDisplayDurationModelSerializer,
+    JobHistoryModelSerializer,
+    SubscriptionModelSerializer,
+    SkillModelSerializer
+)
+from advertisement_module.forms import (
+    AdvertisementModelForm,
+    JobHistoryModelForm,
+    JobSeekerAdvertisementModelForm,
+    ReportAdvertisment,
+    UpdateAdvertisementModelForm
+)
 
-from .forms import (AdvertisementModelForm, JobHistoryModelForm,
-                    JobSeekerAdvertisementModelForm, ReportAdvertisment,
-                    UpdateAdvertisementModelForm)
 
-# region function
-
-def check_employer(request:HttpRequest):
+# فانکشن‌های ابزار برای بررسی نوع کاربر و وضعیت تایید توسط ادمین
+def check_employer(request: HttpRequest) -> bool:
+    """بررسی اینکه آیا کاربر فعلی یک کارفرما است."""
     if request.user.is_authenticated:
-        get_user = request.user
-        if get_user.user_type == "employer":
-            return True
-        else:
-            False
-    else:
-        False
+        return request.user.user_type == "employer"
+    return False
 
-def check_jobSeeker(request:HttpRequest):
+
+def check_job_seeker(request: HttpRequest) -> bool:
+    """بررسی اینکه آیا کاربر فعلی یک جویای کار است."""
     if request.user.is_authenticated:
-        get_user = request.user
-        if get_user.user_type == "jobseeker":
-            return True
-        else:
-            False
-    else:
-        False
-        
-        
-def check_verified_by_admin(request):
+        return request.user.user_type == "jobseeker"
+    return False
+
+
+def check_verified_by_admin(request: HttpRequest) -> bool:
+    """بررسی اینکه آیا کاربر (کارفرما) توسط ادمین تایید شده است یا خیر."""
     if request.user.is_authenticated:
-        get_user = request.user
-        if get_user.user_type == "employer":
-            if get_user.employer.verified_by_admin:
-                return True
-            else:
-                False
-        elif get_user.user_type == "jobseeker":
+        if request.user.user_type == "employer":
+            return request.user.employer.verified_by_admin
+        elif request.user.user_type == "jobseeker":
             return True
-    else:
-        False
+    return False
 
-#endregion
 
-#region advetisement
-
-def dashboard(request:HttpRequest):
+# ویوها
+def dashboard(request: HttpRequest) -> HttpResponse:
+    """نمایش داشبورد کارفرما."""
     if check_employer(request):
         get_user_name = request.user.first_name
+        check_verified_by_admin_status = request.user.employer.verified_by_admin
         
-        check_verified_by_admin = request.user.employer.verified_by_admin
-        
-        status = False
-        if check_verified_by_admin:
-            status = True
-        else:
-            False
-        
-        context = {'name':get_user_name,'status':status}
-        return render(request,'advertisement_module/home.html',context)
+        context = {'name': get_user_name, 'status': check_verified_by_admin_status}
+        return render(request, 'advertisement_module/home.html', context)
     return HttpResponseNotFound("404")
 
 
-def advetisement_list(request):
+def advertisement_list(request: HttpRequest) -> HttpResponse:
+    """لیست آگهی‌های مربوط به کارفرما."""
     if check_verified_by_admin(request):
-        
         get_employer = request.user.employer
+        advertisements = Advertisement.objects.filter(employer=get_employer).order_by('created_at')
         
-        
-        advertisements = Advertisment.objects.filter(employer = get_employer).order_by('created_at')
-        
-        context = {'advertisements' : advertisements}
-        
-        return render(request,"advertisement_module/manage.html",context)
-        
+        context = {'advertisements': advertisements}
+        return render(request, "advertisement_module/manage.html", context)
     return HttpResponseNotFound("404")
 
 
-def advertisement_detail(request,code):
+def advertisement_detail(request: HttpRequest, code: str) -> HttpResponse:
+    """نمایش جزئیات یک آگهی خاص."""
     if check_verified_by_admin(request) and code:
-        advertise = get_object_or_404(Advertisment,advertise_code=code)
-        get_employer = advertise.employer
+        advertisement = get_object_or_404(Advertisement, advertise_code=code)
+        get_employer = advertisement.employer
         
-        context = {'data':advertise,'province':get_employer.province,'county':get_employer.county,'district':get_employer.district}
-        return render(request,'advertisement_module/detail.html',context)
+        context = {'data': advertisement, 'province': get_employer.province, 'county': get_employer.county, 'district': get_employer.district}
+        return render(request, 'advertisement_module/detail.html', context)
     return HttpResponseNotFound("404")
 
 
 class CreateAdvertisement(View):
-    def get(self,request,**kwargs):
+    """ویو کلاس‌بنیاد برای ایجاد آگهی جدید."""
+    def get(self, request: HttpRequest) -> HttpResponse:
         if check_verified_by_admin(request):
-            form =  AdvertisementModelForm()
-            context = {'form':form}
-            return render(request,"advertisement_module/create.html",context)
+            form = AdvertisementModelForm()
+            context = {'form': form}
+            return render(request, "advertisement_module/create.html", context)
         return HttpResponseNotFound("404")
 
-    def post(self,request):
+    def post(self, request: HttpRequest) -> HttpResponse:
         if check_verified_by_admin(request):
             form = AdvertisementModelForm(request.POST)
             if form.is_valid():
-                
                 get_employer = request.user.employer
+                advertisement = form.save(commit=False)
                 
-                advertise = form.save(commit=False)
-                
-                advertise.province = get_employer.province
-                
-                advertise.county = get_employer.county
+                advertisement.province = get_employer.province
+                advertisement.county = get_employer.county
                 
                 if get_employer.district:
-                    advertise.district = get_employer.district
-                                
-                advertise.employer = get_employer
+                    advertisement.district = get_employer.district
                 
-                advertise.save()
+                advertisement.employer = get_employer
+                advertisement.save()
                 form.save_m2m()
                 
                 return redirect("dashboard")
             else:
-                context ={'form':form}
-                return render(request,"advertisement_module/create.html",context)
+                context = {'form': form}
+                return render(request, "advertisement_module/create.html", context)
         return HttpResponseNotFound("404")
 
 
 class UpdateAdvertisementView(View):
-    def get(self,request,**kwargs):
+    """ویو کلاس‌بنیاد برای بروزرسانی یک آگهی."""
+    def get(self, request: HttpRequest, **kwargs) -> HttpResponse:
         if check_verified_by_admin(request):
             code = kwargs.get('code')
             if code:
-                advertise = get_object_or_404(Advertisment,advertise_code=code)
-                form = UpdateAdvertisementModelForm(instance=advertise)
-                form.advertise_code = code
+                advertisement = get_object_or_404(Advertisement, advertise_code=code)
+                form = UpdateAdvertisementModelForm(instance=advertisement)
             
-                context = {'form':form}
-                return render(request,"advertisement_module/update.html",context)
-            else:
-                return HttpResponseNotFound("404")
-        else:
-            return HttpResponseNotFound("404")
+                context = {'form': form}
+                return render(request, "advertisement_module/update.html", context)
+        return HttpResponseNotFound("404")
         
-    def post(self,request,**kwargs):
+    def post(self, request: HttpRequest, **kwargs) -> HttpResponse:
         if check_verified_by_admin(request):
-
             code = kwargs.get('code')
             if code:
-                advertise = get_object_or_404(Advertisment,advertise_code=code)
-                advertise_form_instance = get_object_or_404(Advertisment,advertise_code=code)
-                form = UpdateAdvertisementModelForm(request.POST,instance=advertise_form_instance)
-                if form.is_valid():
-                    advertise_form = form.save(commit=False)
-                    advertise_form.advertise_code = code
-                    advertise_form.is_show = False
-                    advertise_form.check_by_admin = False
-                    advertise_form.status = 'pending'
-                    if advertise_form.duration_id!= advertise.duration_id or advertise_form.subscription_id != advertise.subscription_id:
-                        duration = 0
-                        subscription = 0
-                        if advertise_form.duration_id != advertise.duration_id:
-                            duration = Duration.objects.get(pk = advertise_form.duration_id).price
-                        if advertise_form.subscription_id != advertise.subscription_id:
-                            subscription = Subscription.objects.get(pk=advertise_form.subscription_id).price
-                        sum = int(duration) + int(subscription)
-                        advertise_form.total_price = sum
-                        if advertise_form.total_price >0:
-                            advertise_form.pay_status = False
-                            advertise_form.status = "unpaid"
+                advertisement_instance = get_object_or_404(Advertisement, advertise_code=code)
+                form = UpdateAdvertisementModelForm(request.POST, instance=advertisement_instance)
                 
-                    advertise_form.save()
+                if form.is_valid():
+                    advertisement_form = form.save(commit=False)
+                    advertisement_form.advertise_code = code
+                    advertisement_form.is_show = False
+                    advertisement_form.check_by_admin = False
+                    advertisement_form.status = 'pending'
+                    
+                    if advertisement_form.duration_id != advertisement_instance.duration_id or advertisement_form.subscription_id != advertisement_instance.subscription_id:
+                        duration_price = 0
+                        subscription_price = 0
+                        
+                        if advertisement_form.duration_id != advertisement_instance.duration_id:
+                            duration_price = AdDisplayDuration.objects.get(pk=advertisement_form.duration_id).price
+                        if advertisement_form.subscription_id != advertisement_instance.subscription_id:
+                            subscription_price = Subscription.objects.get(pk=advertisement_form.subscription_id).price
+                        
+                        total_price = duration_price + subscription_price
+                        advertisement_form.total_price = total_price
+                        
+                        if advertisement_form.total_price > 0:
+                            advertisement_form.pay_status = False
+                            advertisement_form.status = "unpaid"
+                
+                    advertisement_form.save()
                     form.save_m2m()
                     return redirect("advertisement_manage")
                 else:
-                    context = {'form':form}
-                    return render(request,"advertisement_module/update.html",context)
+                    context = {'form': form}
+                    return render(request, "advertisement_module/update.html", context)
             return HttpResponseNotFound("404")
-        else:
-            return HttpResponseNotFound("404")
+        return HttpResponseNotFound("404")
 
-        
-def delete_advertisement(request,code):
+
+def delete_advertisement(request: HttpRequest, code: str) -> HttpResponse:
+    """حذف یک آگهی خاص."""
     if check_verified_by_admin(request) and code:
-        advertise = get_object_or_404(Advertisment,advertise_code=code)
-        advertise.delete()
+        advertisement = get_object_or_404(Advertisement, advertise_code=code)
+        advertisement.delete()
         
         return redirect('advertisement_manage')
     return HttpResponseNotFound("404")
 
-# endregion
 
-# region jobseeker
-
-def jobSeeker_advetisement_list(request):
-    if check_jobSeeker(request):
+def job_seeker_advertisement_list(request: HttpRequest) -> HttpResponse:
+    """نمایش لیست آگهی‌های جویای کار."""
+    if check_job_seeker(request):
         try:
-            advertisment = AdvertismentJobSeeker.objects.get(jobSeeker = request.user.jobseeker)
-        except:
-            advertisment = None
+            advertisement = AdvertisementJobSeeker.objects.get(jobSeeker=request.user.jobseeker)
+        except AdvertisementJobSeeker.DoesNotExist:
+            advertisement = None
         
-        get_jobseeker = request.user.jobseeker
-            
-        jobs = get_jobseeker.job_histories.all()
+        jobs = request.user.jobseeker.job_histories.all()
         
-        context = {'data':advertisment,'jobs':jobs}
-        return render(request,"advertisement_module/manage_jobSeeker.html",context)
-    else:
-        return HttpResponseNotFound("404")
+        context = {'data': advertisement, 'jobs': jobs}
+        return render(request, "advertisement_module/manage_jobSeeker.html", context)
+    return HttpResponseNotFound("404")
 
-def jobseeker_advertisement_detail(request,code):
+
+def job_seeker_advertisement_detail(request: HttpRequest, code: str) -> HttpResponse:
+    """نمایش جزئیات یک آگهی خاص برای جویای کار."""
     if check_verified_by_admin(request) and code:
-        advertise = get_object_or_404(AdvertismentJobSeeker,advertise_code=code,jobSeeker = request.user.jobseeker)
-        get_jobseeker = advertise.jobSeeker
+        advertisement = get_object_or_404(AdvertisementJobSeeker, advertise_code=code, jobSeeker=request.user.jobseeker)
+        job_seeker = advertisement.jobSeeker
         
-        
-        
-        
-        context = {'data':advertise,'province':get_jobseeker.province,'county':get_jobseeker.county,'district':get_jobseeker.district}
-        return render(request,'advertisement_module/detail_jobseeker.html',context)
+        context = {'data': advertisement, 'province': job_seeker.province, 'county': job_seeker.county, 'district': job_seeker.district}
+        return render(request, 'advertisement_module/detail_jobseeker.html', context)
     return HttpResponseNotFound("404")
 
 
 class JobSeekerCreateAdvertisement(View):
-    def get(self,request,**kwargs):
-        if check_jobSeeker(request):
-            get_jobseeker = request.user.jobseeker
-            get_advertisement = AdvertismentJobSeeker.objects.filter(jobSeeker = get_jobseeker)
-            if get_advertisement.count()>1:
-                return HttpResponse("شما نمیتوانید بیشتر از یک اگهی استخدام ایجاد کنید.")
-            form =  JobSeekerAdvertisementModelForm()
-            context = {'form':form}
-            return render(request,"advertisement_module/jobseeker_create_advertisement.html",context)
+    """ویو کلاس‌بنیاد برای ایجاد آگهی جدید توسط جویای کار."""
+    def get(self, request: HttpRequest, **kwargs) -> HttpResponse:
+        if check_job_seeker(request):
+            job_seeker = request.user.jobseeker
+            existing_advertisements = AdvertisementJobSeeker.objects.filter(jobSeeker=job_seeker)
+            
+            if existing_advertisements.count() > 1:
+                return HttpResponse("شما نمی‌توانید بیشتر از یک آگهی استخدام ایجاد کنید.")
+            
+            form = JobSeekerAdvertisementModelForm()
+            context = {'form': form}
+            return render(request, "advertisement_module/jobseeker_create_advertisement.html", context)
+        return HttpResponseNotFound("404")
 
-    def post(self,request):
+    def post(self, request: HttpRequest) -> HttpResponse:
         if check_verified_by_admin(request):
             form = JobSeekerAdvertisementModelForm(request.POST)
             if form.is_valid():
+                job_seeker = request.user.jobseeker
+                advertisement = form.save(commit=False)
                 
-                get_jobSeeker = request.user.jobseeker
+                advertisement.province = job_seeker.province
+                advertisement.county = job_seeker.county
                 
-                advertise = form.save(commit=False)
+                if job_seeker.district:
+                    advertisement.district = job_seeker.district
                 
-                advertise.province = get_jobSeeker.province
-                
-                advertise.county = get_jobSeeker.county
-                
-                if get_jobSeeker.district:
-                    advertise.district = get_jobSeeker.district
-                                
-                advertise.jobSeeker = get_jobSeeker
-                
-                advertise.save()
+                advertisement.jobSeeker = job_seeker
+                advertisement.save()
                 form.save_m2m()
                 
                 return redirect("jobseeker_manage")
             else:
-                context ={'form':form}
-                return render(request,"advertisement_module/jobseeker_create_advertisement.html",context)
+                context = {'form': form}
+                return render(request, "advertisement_module/jobseeker_create_advertisement.html", context)
         return HttpResponseNotFound("404")
 
-class JobSeekerUpdateAdvertisementView(View):
-    def get(self,request,**kwargs):
-        if check_verified_by_admin(request):
-            code = kwargs.get('code')
-            if code:
-                advertise = get_object_or_404(AdvertismentJobSeeker,advertise_code=code,jobSeeker=request.user.jobseeker)
-                form = JobSeekerAdvertisementModelForm(instance=advertise)
-                form.advertise_code = code
-            
-                context = {'form':form}
-                return render(request,"advertisement_module/update_jobseeker_advertisement.html",context)
-            else:
-                return HttpResponseNotFound("404")
-        else:
-            return HttpResponseNotFound("404")
-        
-    def post(self,request,**kwargs):
-        if check_verified_by_admin(request):
 
+class JobSeekerUpdateAdvertisementView(View):
+    """ویو کلاس‌بنیاد برای بروزرسانی آگهی جویای کار."""
+    def get(self, request: HttpRequest, **kwargs) -> HttpResponse:
+        if check_verified_by_admin(request):
             code = kwargs.get('code')
             if code:
-                advertise = get_object_or_404(AdvertismentJobSeeker,advertise_code=code)
-                advertise_form_instance = get_object_or_404(AdvertismentJobSeeker,advertise_code=code)
-                form = JobSeekerAdvertisementModelForm(request.POST,instance=advertise_form_instance)
-                if form.is_valid():
-                    advertise_form = form.save(commit=False)
-                    advertise_form.advertise_code = code
-                    advertise_form.is_show = False
-                    advertise_form.check_by_admin = False
-                    advertise_form.status = 'pending'
-                    if advertise_form.duration_id!= advertise.duration_id or advertise_form.subscription_id != advertise.subscription_id:
-                        duration = 0
-                        subscription = 0
-                        if advertise_form.duration_id != advertise.duration_id:
-                            duration = Duration.objects.get(pk = advertise_form.duration_id).price
-                        if advertise_form.subscription_id != advertise.subscription_id:
-                            subscription = Subscription.objects.get(pk=advertise_form.subscription_id).price
-                        sum = int(duration) + int(subscription)
-                        advertise_form.total_price = sum
-                        if advertise_form.total_price >0:
-                            advertise_form.pay_status = False
-                            advertise_form.status = "unpaid"
+                advertisement = get_object_or_404(AdvertisementJobSeeker, advertise_code=code, jobSeeker=request.user.jobseeker)
+                form = JobSeekerAdvertisementModelForm(instance=advertisement)
+            
+                context = {'form': form}
+                return render(request, "advertisement_module/update_jobseeker_advertisement.html", context)
+        return HttpResponseNotFound("404")
+        
+    def post(self, request: HttpRequest, **kwargs) -> HttpResponse:
+        if check_verified_by_admin(request):
+            code = kwargs.get('code')
+            if code:
+                advertisement_instance = get_object_or_404(AdvertisementJobSeeker, advertise_code=code)
+                form = JobSeekerAdvertisementModelForm(request.POST, instance=advertisement_instance)
                 
-                    advertise_form.save()
+                if form.is_valid():
+                    advertisement_form = form.save(commit=False)
+                    advertisement_form.advertise_code = code
+                    advertisement_form.is_show = False
+                    advertisement_form.check_by_admin = False
+                    advertisement_form.status = 'pending'
+                    
+                    if advertisement_form.duration_id != advertisement_instance.duration_id or advertisement_form.subscription_id != advertisement_instance.subscription_id:
+                        duration_price = 0
+                        subscription_price = 0
+                        
+                        if advertisement_form.duration_id != advertisement_instance.duration_id:
+                            duration_price = AdDisplayDuration.objects.get(pk=advertisement_form.duration_id).price
+                        if advertisement_form.subscription_id != advertisement_instance.subscription_id:
+                            subscription_price = Subscription.objects.get(pk=advertisement_form.subscription_id).price
+                        
+                        total_price = duration_price + subscription_price
+                        advertisement_form.total_price = total_price
+                        
+                        if advertisement_form.total_price > 0:
+                            advertisement_form.pay_status = False
+                            advertisement_form.status = "unpaid"
+                
+                    advertisement_form.save()
                     form.save_m2m()
                     return redirect("jobseeker_manage")
                 else:
-                    context = {'form':form}
-                    return render(request,"advertisement_module/update_jobseeker_advertisement.html",context)
+                    context = {'form': form}
+                    return render(request, "advertisement_module/update_jobseeker_advertisement.html", context)
             return HttpResponseNotFound("404")
-        else:
-            return HttpResponseNotFound("404")
+        return HttpResponseNotFound("404")
 
-def delete_jobseeker_advertisement(request,code):
+
+def delete_job_seeker_advertisement(request: HttpRequest, code: str) -> HttpResponse:
+    """حذف یک آگهی خاص توسط جویای کار."""
     if check_verified_by_admin(request) and code:
-        advertise = get_object_or_404(AdvertismentJobSeeker,advertise_code=code,jobSeeker = request.user.jobseeker)
-        advertise.delete()
+        advertisement = get_object_or_404(AdvertisementJobSeeker, advertise_code=code, jobSeeker=request.user.jobseeker)
+        advertisement.delete()
         
         return redirect('jobseeker_manage')
     return HttpResponseNotFound("404")
 
-#endregion
 
-# region history
-
-def job_histories(request):
-    if check_jobSeeker(request):
-        jobSeeker = request.user.jobseeker
-        jobs = jobSeeker.job_histories.all()
+def job_histories(request: HttpRequest) -> HttpResponse:
+    """نمایش لیست تاریخچه‌های شغلی مربوط به جویای کار."""
+    if check_job_seeker(request):
+        job_seeker = request.user.jobseeker
+        jobs = job_seeker.job_histories.all()
         
-        context = {'jobs':jobs}
-        return render(request,"advertisement_module/job_history_list.html",context)
-    else:
-        return HttpResponseNotFound("404")
+        context = {'jobs': jobs}
+        return render(request, "advertisement_module/job_history_list.html", context)
+    return HttpResponseNotFound("404")
+
 
 class CreateJobHistory(View):
-    def get(self,request):
-        if check_jobSeeker:
+    """ویو کلاس‌بنیاد برای ایجاد تاریخچه شغلی جدید."""
+    def get(self, request: HttpRequest) -> HttpResponse:
+        if check_job_seeker(request):
             jobs = request.user.jobseeker.job_histories.all()
-            if jobs.count() >=5:
+            if jobs.count() >= 5:
                 return HttpResponseNotFound("404")
 
             form = JobHistoryModelForm()
-            context = {'form':form}
-            return render(request,"advertisement_module/create_jobHistory.html",context)
-        else:
-            return HttpResponseNotFound("404")
+            context = {'form': form}
+            return render(request, "advertisement_module/create_jobHistory.html", context)
+        return HttpResponseNotFound("404")
         
-    def post(self,request):
-        if check_jobSeeker:
+    def post(self, request: HttpRequest) -> HttpResponse:
+        if check_job_seeker(request):
             form = JobHistoryModelForm(request.POST)
-            if form.is_valid:
+            if form.is_valid():
                 history = form.save(commit=False)
                 history.job_seeker = request.user.jobseeker
                 history.save()
                 return redirect("jobseeker_manage")
             else:
-                context = {'form':form}
-                return render(request,"advertisement_module/create_jobHistory.html",context)
+                context = {'form': form}
+                return render(request, "advertisement_module/create_jobHistory.html", context)
+        return HttpResponseNotFound("404")
+
 
 class UpdateJobHistory(View):
-    def get(self,request,**kwargs):
-        if check_jobSeeker:
+    """ویو کلاس‌بنیاد برای بروزرسانی تاریخچه شغلی."""
+    def get(self, request: HttpRequest, **kwargs) -> HttpResponse:
+        if check_job_seeker(request):
             code = kwargs.get('code')
-            
-            find_history = get_object_or_404(JobHistory,pk = code)
+            find_history = get_object_or_404(JobHistory, pk=code)
             
             form = JobHistoryModelForm(instance=find_history)
-            context = {'form':form}
-            return render(request,"advertisement_module/update_jobHistory.html",context)
-        else:
-            return HttpResponseNotFound("404")
+            context = {'form': form}
+            return render(request, "advertisement_module/update_jobHistory.html", context)
+        return HttpResponseNotFound("404")
         
-    def post(self,request,**kwargs):
-        if check_jobSeeker:
+    def post(self, request: HttpRequest, **kwargs) -> HttpResponse:
+        if check_job_seeker(request):
             code = kwargs.get('code')
+            find_history = get_object_or_404(JobHistory, pk=code)
             
-            find_history = get_object_or_404(JobHistory,pk = code)
-
-            
-            form = JobHistoryModelForm(request.POST,instance=find_history)
+            form = JobHistoryModelForm(request.POST, instance=find_history)
             if form.is_valid():
                 form.save()
                 return redirect("jobseeker_manage")
-            context = {'form':form}
-            return render(request,"advertisement_module/update_jobHistory.html",context)
-        else:
-            return HttpResponseNotFound("404")
+            context = {'form': form}
+            return render(request, "advertisement_module/update_jobHistory.html", context)
+        return HttpResponseNotFound("404")
 
-def delete_jobHistory(request,code):
-    if check_jobSeeker:
-        find_history = get_object_or_404(JobHistory,pk = code)
+
+def delete_job_history(request: HttpRequest, code: str) -> HttpResponse:
+    """حذف یک تاریخچه شغلی خاص توسط جویای کار."""
+    if check_job_seeker(request):
+        find_history = get_object_or_404(JobHistory, pk=code)
         find_history.delete()
-        return redirect("jobseeker_manage")
-    else:
-        HttpResponseNotFound("404")
-         
-#endregion                
-
-            
-# region API
+        return redirect('jobseeker_manage')
+    return HttpResponseNotFound("404")
 
 
+# ویوست‌های API برای مدل‌های مختلف با استفاده از DRF (Django Rest Framework)
 class SubscriptionModelViewSetApiView(ModelViewSet):
+    """ViewSet برای مدیریت API مربوط به Subscription."""
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionModelSerializer
 
+
 class SkillModelViewSetApiView(ModelViewSet):
+    """ViewSet برای مدیریت API مربوط به Skill."""
     queryset = Skill.objects.all()
     serializer_class = SkillModelSerializer
 
-class DurationModelViewSetApiView(ModelViewSet):
-    queryset = Duration.objects.all()
-    serializer_class = DurationModelSerializer
+
+class AdDisplayDurationModelViewSetApiView(ModelViewSet):
+    """ViewSet برای مدیریت API مربوط به AdDisplayDuration."""
+    queryset = AdDisplayDuration.objects.all()
+    serializer_class = AdDisplayDurationModelSerializer
+
 
 class JobHistoryViewSetApiView(ModelViewSet):
+    """ViewSet برای مدیریت API مربوط به JobHistory."""
     queryset = JobHistory.objects.all()
     serializer_class = JobHistoryModelSerializer
 
-class AdvertismentModelViewSetApiView(ModelViewSet):
-    queryset = Advertisment.objects.all().order_by('-created_at')
+
+class AdvertisementModelViewSetApiView(ModelViewSet):
+    """ViewSet برای مدیریت API مربوط به Advertisement."""
+    queryset = Advertisement.objects.all().order_by('-created_at')
     serializer_class = AdvertisementModelSerializer
-    
-class AdvertismentJobSeekerModelViewSetApiView(ModelViewSet):
-    queryset = AdvertismentJobSeeker.objects.all().order_by('-created_at')
+
+
+class AdvertisementJobSeekerModelViewSetApiView(ModelViewSet):
+    """ViewSet برای مدیریت API مربوط به AdvertisementJobSeeker."""
+    queryset = AdvertisementJobSeeker.objects.all().order_by('-created_at')
     serializer_class = AdvertisementJobSeekerModelSerializer
 
-#endregion
 
-    
-# ajax action
-def get_cities(request:HttpRequest):
+# فانکشن برای مدیریت درخواست‌های Ajax به منظور دریافت شهرها
+def get_cities(request: HttpRequest) -> JsonResponse:
+    """
+    دریافت لیست شهرها بر اساس شناسه استان (province_id) از طریق درخواست Ajax.
+    """
     province_id = int(request.GET.get('province_id'))
     try:
         cities = County.objects.filter(province_id=province_id).values("id", "name")

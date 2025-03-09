@@ -12,9 +12,6 @@ advertise
 
 
 
-
-
-
 <div class="container mt-5">
     <div class="card shadow p-4">
         <h3 class="text-center mb-4">مدیریت آگهی‌ها</h3>
@@ -29,15 +26,6 @@ advertise
             </thead>
             
             <tbody>
-
-
-
-
-
-
-
-
-
                 {% if data.pay_status == 1 and data.status == "approved" %}
 
                 <tr>
@@ -92,7 +80,7 @@ advertise
             </tbody>
         </table>
         {% else %}
-        <p class="text-center">آگهی وجود ندارد <a href="{% url 'jobseeker_create_advetisement' %}">ایجاد </a> کنید</p>
+        <p class="text-center">آگهی وجود ندارد <a href="{% url 'jobseeker_create_advertisement' %}">ایجاد </a> کنید</p>
         {% endif %}
 
         <hr>
@@ -127,9 +115,6 @@ advertise
                             <a class="btn btn-danger" href="{% url 'delete_history' job.pk %}">حذف</a>
                             <a class="btn btn-info" href="{% url 'jobseeker_manage' %}">بازگشت</a>
                         </td>
-
-
-
                     </tr>
                     {% endfor %}
 
@@ -146,12 +131,4 @@ advertise
         <a href="{% url 'jobseeker_manage' %}" class="btn btn-outline-secondary mt-3 d-block">بازگشت</a>
     </div>
 </div>
-
-
-
-
-
-
-
-
 {% endblock %}
